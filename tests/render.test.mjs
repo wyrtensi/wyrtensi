@@ -66,3 +66,20 @@ test('with the real swirl the image stays within 250 000 bytes', async () => {
   const svg = renderSvg(bodies, opts('dark', `data:image/webp;base64,${webp.toString('base64')}`));
   assert.ok(Buffer.byteLength(svg) <= 250000, `size ${Buffer.byteLength(svg)}`);
 });
+
+test('labels have a halo and dots an outline in the theme background', () => {
+  for (const theme of ['dark', 'light']) {
+    const svg = renderSvg(bodies, opts(theme));
+    const bg = THEMES[theme].bg;
+    const halos = [...svg.matchAll(/<text [^>]*paint-order="stroke"[^>]*>/g)].map((m) => m[0]);
+    assert.equal(halos.length, bodies.filter((b) => b.label).length);
+    for (const tag of halos) {
+      assert.ok(tag.includes(`stroke="${bg}"`) && tag.includes('stroke-width="3"') && tag.includes('stroke-opacity=".85"') && tag.includes('stroke-linejoin="round"'), tag);
+    }
+    const dots = [...svg.matchAll(/<circle class="dot[^>]*>/g)].map((m) => m[0]);
+    assert.equal(dots.length, bodies.length);
+    for (const tag of dots) assert.ok(tag.includes(`stroke="${bg}"`) && tag.includes('stroke-width="1.5"'), tag);
+    const legend = svg.slice(svg.lastIndexOf('<text'));
+    assert.ok(!legend.includes('paint-order'), 'legend has no halo');
+  }
+});

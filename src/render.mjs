@@ -40,12 +40,12 @@ export function renderSvg(bodies, { theme, swirl, legend, title, desc }) {
   for (const b of bodies) {
     if (b.pinned) out.push(`<circle class="ring" cx="${b.x}" cy="${b.y}" r="${(b.r + 4).toFixed(1)}" fill="none" stroke="${t.ring}" stroke-opacity=".7"/>`);
     const tw = b.twinkle ? ` tw${b.phase ? ` p${b.phase}` : ''}` : '';
-    out.push(`<circle class="dot${tw}" cx="${b.x}" cy="${b.y}" r="${b.r}" fill="${t.dot(b)}"/>`);
+    out.push(`<circle class="dot${tw}" cx="${b.x}" cy="${b.y}" r="${b.r}" fill="${t.dot(b)}" stroke="${t.bg}" stroke-width="1.5"/>`);
   }
   for (const b of bodies) {
     if (!b.label) continue;
     const l = b.label;
-    out.push(`<text x="${l.x}" y="${l.y}" text-anchor="${l.anchor}" font-size="${l.size}" fill="${b.pinned ? t.pin : t.label}">${esc(b.name)}</text>`);
+    out.push(`<text x="${l.x}" y="${l.y}" text-anchor="${l.anchor}" font-size="${l.size}" fill="${b.pinned ? t.pin : t.label}" stroke="${t.bg}" stroke-width="3" stroke-opacity=".85" stroke-linejoin="round" paint-order="stroke">${esc(b.name)}</text>`);
   }
   out.push(`<text x="${cx}" y="${h - 14}" text-anchor="middle" font-size="12" fill="${t.legend}">${esc(legend)}</text>`);
   out.push('</svg>');

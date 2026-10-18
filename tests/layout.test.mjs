@@ -94,3 +94,22 @@ test('output is sorted by name, rounded, and deterministic', () => {
   assert.deepEqual(one, layout([...input].reverse(), TODAY, { profile: 'w' }));
   for (const b of one) assert.equal(b.x, Math.round(b.x * 10) / 10);
 });
+
+test('non-pinned labels never cover another repo dot', () => {
+  const many = Array.from({ length: 30 }, (_, i) => rec(`repo-${i}`, '2026-10-18', 4, { pinned: i < 3 }));
+  const bodies = layout(many, TODAY, { profile: 'w' });
+  const labelled = bodies.filter((b) => b.label && !b.pinned);
+  assert.ok(labelled.length > 0, 'some labels are drawn');
+  for (const b of labelled) {
+    const l = b.label;
+    const w = b.name.length * l.size * 0.56;
+    const x0 = l.anchor === 'start' ? l.x : l.x - w;
+    const box = [x0, l.y - l.size * 0.8, x0 + w, l.y + l.size * 0.25];
+    for (const o of bodies) {
+      if (o === b) continue;
+      const d = [o.x - o.r - 2, o.y - o.r - 2, o.x + o.r + 2, o.y + o.r + 2];
+      const apart = box[2] <= d[0] || d[2] <= box[0] || box[3] <= d[1] || d[3] <= box[1];
+      assert.ok(apart, `${b.name} label covers ${o.name}`);
+    }
+  }
+});

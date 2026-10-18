@@ -34,6 +34,9 @@ function box(name, l) {
   return [x0, l.y - l.size * 0.8, x0 + w, l.y + l.size * 0.25];
 }
 
+// A label may not cover any dot: its box grown by 2 units.
+const dotBox = (b) => [b.x - b.r - 2, b.y - b.r - 2, b.x + b.r + 2, b.y + b.r + 2];
+
 const overlaps = (a, b) => !(a[2] <= b[0] || b[2] <= a[0] || a[3] <= b[1] || b[3] <= a[1]);
 
 function clampLabel(name, l) {
@@ -59,7 +62,8 @@ function placeLabels(bodies) {
     for (const dy of [0, -13, 13, -26, 26]) {
       const l = clampLabel(b.name, { x: x0, y: b.y + 4 + dy, anchor, size });
       last = l;
-      if (!placed.some((p) => overlaps(p, box(b.name, l)))) { chosen = l; break; }
+      const lb = box(b.name, l);
+      if (!placed.some((p) => overlaps(p, lb)) && !bodies.some((o) => o !== b && overlaps(dotBox(o), lb))) { chosen = l; break; }
     }
     if (!chosen && b.pinned) chosen = last;
     if (chosen) {
