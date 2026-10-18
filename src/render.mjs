@@ -15,10 +15,11 @@ const FADE_R = 380;
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+// An SVG shown through <img> is re-rasterised on every animation frame; stepped timing renders 12 frames a second instead of 60.
 const STYLE = '@keyframes spin{to{transform:rotate(360deg)}}'
   + '@keyframes tw{50%{opacity:.45}}'
-  + '.swirl{transform-box:fill-box;transform-origin:center;animation:spin 120s linear infinite}'
-  + '.tw{animation:tw 3s ease-in-out infinite}.p1{animation-delay:-1s}.p2{animation-delay:-2s}'
+  + '.swirl{transform-box:fill-box;transform-origin:center;animation:spin 120s steps(1440) infinite}'
+  + '.tw{animation:tw 3s steps(6) infinite}.p1{animation-delay:-1s}.p2{animation-delay:-2s}'
   + '@media (prefers-reduced-motion: reduce){.swirl,.tw{animation:none}}'
   + 'text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}';
 

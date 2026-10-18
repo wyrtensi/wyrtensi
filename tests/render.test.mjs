@@ -18,7 +18,9 @@ test('animation, reduced motion and no scripts', () => {
   assert.match(svg, /@keyframes spin/);
   assert.match(svg, /@keyframes tw/);
   assert.match(svg, /@media \(prefers-reduced-motion: ?reduce\)/);
-  assert.match(svg, /animation:\s*spin 120s linear infinite/);
+  assert.match(svg, /animation:\s*spin 120s steps\(1440\) infinite/);
+  assert.match(svg, /\.tw\{animation:\s*tw 3s steps\(6\) infinite\}/);
+  assert.ok(!/linear|ease-in-out/.test(svg), 'no smooth timing functions');
   assert.ok(!/<script/i.test(svg));
 });
 
