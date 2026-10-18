@@ -1,0 +1,7 @@
+{
+  "login": "wyrtensi",
+  "automated": { "white-potato-list": "relink " },
+  "legend": "closer to the centre: fresher · bigger: more commits in 90 days · ring: pinned",
+  "title": "Repositories of wyrtensi orbiting a vortex",
+  "desc": "Public repositories of wyrtensi orbiting a vortex: the closer to the centre, the more recent the last commit; bigger dots have more commits in the last 90 days; ringed ones are pinned."
+}

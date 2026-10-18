@@ -1,0 +1,13 @@
+{
+  "name": "wyrtensi-profile",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "build": "node src/build.mjs",
+    "swirl": "node tools/swirl.mjs"
+  },
+  "devDependencies": {
+    "sharp": "0.33.5"
+  }
+}
