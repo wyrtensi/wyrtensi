@@ -7,6 +7,7 @@ const EDGE_DAYS = 730;
 const LEGEND_SPACE = 30;
 const round1 = (n) => Math.round(n * 10) / 10;
 const byName = (a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
+const byPriority = (a, b) => (b.pinned - a.pinned) || (b.recent - a.recent) || byName(a, b);
 
 // FNV-1a 32-bit over code points, scaled to [0, 1).
 export function hash(name) {
@@ -53,7 +54,7 @@ function placeLabels(bodies) {
   const placed = [];
   const order = bodies
     .filter((b) => b.pinned || b.recent > 0)
-    .sort((a, b) => (b.pinned - a.pinned) || (b.recent - a.recent) || byName(a, b));
+    .sort(byPriority);
   for (const b of order) {
     const size = b.pinned ? 13 : 12;
     const anchor = b.x > VIEW.w * 0.8 ? 'end' : 'start';
@@ -74,6 +75,31 @@ function placeLabels(bodies) {
   }
 }
 
+const GAP = 3;
+const SEPARATION_TRIES = 24;
+
+// Settle bodies in priority order; a body that touches a settled one swings
+// around the centre (same distance, k * step radians, k = 1, -1, 2, -2, ...)
+// until it is free. Works on unrounded positions.
+function separate(bodies) {
+  const settled = [];
+  const clear = (b, x, y) => settled.every((o) => Math.hypot(o.x - x, o.y - y) >= o.r + b.r + GAP);
+  for (const b of [...bodies].sort(byPriority)) {
+    if (!clear(b, b.x, b.y)) {
+      const d = Math.hypot(b.x - VIEW.cx, b.y - VIEW.cy);
+      const a0 = Math.atan2(b.y - VIEW.cy, b.x - VIEW.cx);
+      const step = (b.r + GAP) / d;
+      for (let t = 1; t <= SEPARATION_TRIES; t++) {
+        const k = t % 2 ? (t + 1) / 2 : -t / 2;
+        const x = VIEW.cx + d * Math.cos(a0 + k * step);
+        const y = VIEW.cy + d * Math.sin(a0 + k * step);
+        if (clear(b, x, y)) { b.x = x; b.y = y; break; }
+      }
+    }
+    settled.push(b);
+  }
+}
+
 export function layout(repos, today, { profile }) {
   const bodies = selectRepos(repos, profile).map((repo) => {
     const days = daysSince(repo.lastCommit, today);
@@ -84,8 +110,8 @@ export function layout(repos, today, { profile }) {
       name: repo.name,
       pinned: repo.pinned,
       recent: repo.recent,
-      x: round1(VIEW.cx + dist * Math.cos(angle)),
-      y: round1(VIEW.cy + dist * Math.sin(angle)),
+      x: VIEW.cx + dist * Math.cos(angle),
+      y: VIEW.cy + dist * Math.sin(angle),
       r: round1(2 + Math.min(7, 2.2 * Math.sqrt(repo.recent / 8))),
       f: Math.round(f * 1000) / 1000,
       dark: Math.max(2, 9 - Math.round(f * 8)),
@@ -95,6 +121,8 @@ export function layout(repos, today, { profile }) {
       label: null,
     };
   });
+  separate(bodies);
+  for (const b of bodies) { b.x = round1(b.x); b.y = round1(b.y); }
   placeLabels(bodies);
   return bodies
     .sort(byName)

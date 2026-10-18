@@ -118,3 +118,26 @@ test('output order is by UTF-16 code unit, not by locale', () => {
   const names = layout([rec('a', TODAY), rec('B', TODAY), rec('_x', TODAY)], TODAY, { profile: 'w' }).map((b) => b.name);
   assert.deepEqual(names, ['B', '_x', 'a']);
 });
+
+test('two dots with nearly equal hashes are pushed apart', () => {
+  const bodies = layout([
+    rec('amnezia-shared-panel', '2026-10-18', 100, { pinned: true }),
+    rec('washguide', '2026-10-18', 20),
+  ], TODAY, { profile: 'w' });
+  const [a, b] = bodies;
+  assert.ok(Math.hypot(a.x - b.x, a.y - b.y) >= a.r + b.r + 3 - 0.2);
+});
+
+test('no two dots touch among thirty equally fresh repos', () => {
+  const many = Array.from({ length: 30 }, (_, i) => rec(`repo-${i}`, '2026-10-18', 4));
+  const bodies = layout(many, TODAY, { profile: 'w' });
+  for (let i = 0; i < bodies.length; i++) for (let j = i + 1; j < bodies.length; j++) {
+    const [a, b] = [bodies[i], bodies[j]];
+    assert.ok(Math.hypot(a.x - b.x, a.y - b.y) >= a.r + b.r + 3 - 0.2, `${a.name} touches ${b.name}`);
+  }
+});
+
+test('separation does not depend on input order', () => {
+  const many = Array.from({ length: 30 }, (_, i) => rec(`repo-${i}`, '2026-10-18', 4));
+  assert.deepEqual(layout(many, TODAY, { profile: 'w' }), layout([...many].reverse(), TODAY, { profile: 'w' }));
+});
