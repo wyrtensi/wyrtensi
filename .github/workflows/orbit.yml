@@ -1,0 +1,45 @@
+name: Orbit
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['src/**', 'orbit.config.json', 'assets/**']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: orbit
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node --test
+      - run: node src/build.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check the images parse as XML
+        run: |
+          for f in dist/orbit-dark.svg dist/orbit-light.svg; do
+            python3 -c "import sys, xml.dom.minidom; xml.dom.minidom.parse(sys.argv[1])" "$f"
+          done
+      - name: Commit changed images
+        run: |
+          git add dist
+          if git diff --cached --quiet; then
+            echo "No change"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore: update orbit'
+          git push
