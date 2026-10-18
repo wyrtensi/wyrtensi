@@ -113,3 +113,8 @@ test('non-pinned labels never cover another repo dot', () => {
     }
   }
 });
+
+test('output order is by UTF-16 code unit, not by locale', () => {
+  const names = layout([rec('a', TODAY), rec('B', TODAY), rec('_x', TODAY)], TODAY, { profile: 'w' }).map((b) => b.name);
+  assert.deepEqual(names, ['B', '_x', 'a']);
+});

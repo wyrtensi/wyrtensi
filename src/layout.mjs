@@ -6,6 +6,7 @@ const DAY = 86400000;
 const EDGE_DAYS = 730;
 const LEGEND_SPACE = 30;
 const round1 = (n) => Math.round(n * 10) / 10;
+const byName = (a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
 
 // FNV-1a 32-bit over code points, scaled to [0, 1).
 export function hash(name) {
@@ -52,7 +53,7 @@ function placeLabels(bodies) {
   const placed = [];
   const order = bodies
     .filter((b) => b.pinned || b.recent > 0)
-    .sort((a, b) => (b.pinned - a.pinned) || (b.recent - a.recent) || a.name.localeCompare(b.name));
+    .sort((a, b) => (b.pinned - a.pinned) || (b.recent - a.recent) || byName(a, b));
   for (const b of order) {
     const size = b.pinned ? 13 : 12;
     const anchor = b.x > VIEW.w * 0.8 ? 'end' : 'start';
@@ -96,6 +97,6 @@ export function layout(repos, today, { profile }) {
   });
   placeLabels(bodies);
   return bodies
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .sort(byName)
     .map(({ recent, ...body }) => body);
 }
